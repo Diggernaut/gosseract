@@ -1,16 +1,21 @@
-package gosseract_test
+package gosseract
 
-import (
-	"testing"
+import "testing"
 
-	"github.com/otiai10/gosseract"
-)
-
-func BenchmarkMust(b *testing.B) {
+func BenchmarkClient_Text(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		gosseract.Must(gosseract.Params{
-			Src:       "./.samples/png/sample000.png",
-			Languages: "eng",
-		})
+		client := NewClient()
+		client.SetImage("./test/data/001-helloworld.png")
+		client.Text()
+		client.Close()
 	}
+}
+
+func BenchmarkClient_Text2(b *testing.B) {
+	client := NewClient()
+	for i := 0; i < b.N; i++ {
+		client.SetImage("./test/data/001-helloworld.png")
+		client.Text()
+	}
+	client.Close()
 }

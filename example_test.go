@@ -1,25 +1,56 @@
-package gosseract_test
+package gosseract
 
-import "github.com/otiai10/gosseract"
-import "testing"
-import "fmt"
-import "image"
+import (
+	"fmt"
+	"os"
+)
 
-func ExampleMust(t *testing.T) {
-	// TODO: it panics! error handling in *Client.accept
-	out := gosseract.Must(gosseract.Params{Src: "./.samples/png/sample002.png",Languages:"eng+heb"})
-	fmt.Println(out)
+func ExampleNewClient() {
+	client := NewClient()
+	// Never forget to defer Close. It is due to caller to Close this client.
+	defer client.Close()
 }
 
-func ExampleClient_Src(t *testing.T) {
-	client, _ := gosseract.NewClient()
-	out, _ := client.Src("./samples/png/samples000.png").Out()
-	fmt.Println(out)
+func ExampleClient_SetImage() {
+	client := NewClient()
+	defer client.Close()
+
+	client.SetImage("./test/data/001-helloworld.png")
+	// See "ExampleClient_Text" for more practical usecase ;)
 }
 
-func ExampleClient_Image(t *testing.T) {
-	client, _ := gosseract.NewClient()
-	var img image.Image // any your image instance
-	out, _ := client.Image(img).Out()
-	fmt.Println(out)
+func ExampleClient_Text() {
+
+	client := NewClient()
+	defer client.Close()
+
+	client.SetImage("./test/data/001-helloworld.png")
+
+	text, err := client.Text()
+	fmt.Println(text, err)
+	// OUTPUT:
+	// Hello, World! <nil>
+
+}
+
+func ExampleClient_SetWhitelist() {
+
+	if os.Getenv("TESS_LSTM_DISABLED") == "1" {
+		os.Exit(0)
+	}
+
+	client := NewClient()
+	defer client.Close()
+	client.SetImage("./test/data/002-confusing.png")
+
+	client.SetWhitelist("IO-")
+	text1, _ := client.Text()
+
+	client.SetWhitelist("10-")
+	text2, _ := client.Text()
+
+	fmt.Println(text1, text2)
+	// OUTPUT:
+	// IO- IOO 10-100
+
 }
